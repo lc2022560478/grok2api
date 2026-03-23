@@ -540,7 +540,9 @@ class TokenManager:
             result = await usage_service.get(token_str)
 
             if result and "remainingTokens" in result:
-                new_quota = result.get("remainingTokens")
+                # === 强制改回之前版本的 80/140（忽略服务器真实返回）===
+                new_quota = _default_quota_for_pool(target_pool_name)
+                # ================================================
                 if new_quota is None:
                     new_quota = result.get("remainingQueries")
                 if new_quota is None:
@@ -987,7 +989,10 @@ class TokenManager:
                 result, status, error = await _get_usage_with_retry(token_str)
 
                 if result and "remainingTokens" in result:
-                    new_quota = result.get("remainingTokens")
+                    # === 强制改回之前版本的 80/140（忽略服务器真实返回）===
+                    pool_name_for_quota = self.get_pool_name_for_token(token_info.token) or BASIC_POOL_NAME
+                    new_quota = _default_quota_for_pool(pool_name_for_quota)
+                    # ================================================
                     if new_quota is None:
                         new_quota = result.get("remainingQueries")
                     if new_quota is None:
